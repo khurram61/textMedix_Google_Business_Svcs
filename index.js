@@ -5,7 +5,6 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT;
-
 // Middleware
 require("./middleware/common")(app);
 
