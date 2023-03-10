@@ -1,13 +1,28 @@
-const express = require("express"); // import the express package
+const express = require("express");
+const dotenv = require("dotenv");
+dotenv.config();
 
-const server = express(); // creates the server
+const app = express();
 
-// handle requests to the root of the api, the / route
-server.get("/", (req, res) => {
-    res.send("Hello from Express");
+const PORT = process.env.PORT;
+
+// Middleware
+require("./middleware/common")(app);
+
+// Routes
+app.get("/", (req, res) => {
+  res.send("Hello from Express");
 });
+//firebase-admin
+// var admin = require("firebase-admin");
+// var serviceAccount = require("./service-account-file.json");
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
 
-// watch for connections on port 5000
-server.listen(5000, () =>
-    console.log("Server running on http://localhost:5000")
-);
+//   // databaseURL: "<your database URL here>"
+// });
+
+// Server
+app.listen(PORT || 5000, () => {
+  console.log(`server is listening on port:${PORT}`);
+});
