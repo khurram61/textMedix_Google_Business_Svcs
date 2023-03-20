@@ -1,37 +1,59 @@
+# This is a basic workflow to help you get started with Actions
+
 name: CI
 
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+    
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
   build:
-
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    if: github.ref == 'refs/heads/main'
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
-
-      - run: npm ci
-      
-      
-
-      - name: rsync deployments
-        uses: burnett01/rsync-deployments@5.1
-        with:
-          switches: -avzr --delete
-          path: ./*
-          remote_path: /textMedix_Google_Business_Svcs/
-          remote_host: ec2-13-53-82-60.eu-north-1.compute.amazonaws.com
-          remote_user: ubuntu
-          script: sh deploy.sh
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      # Runs a single command using the runners shell
+      - name: Deploy in EC2
+  
+        env:
+            PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY----- MIIEpAIBAAKCAQEAzaOTn/2sv3G1BnnY/3kvau1WOnRPDjcdgwpTl9UmXM9sldlVRKLkEP0CFS84Gxm4WAsTqUQ6txDUeKcSsvxcb8YvbF3GQ7nTzhYaXcMkvEY7GLv+k15Z+N4hP1QKqrdbPls7nyZJLI/zbzXIeA5SQHlP5W3//c1pRbqIJlFywQpQVDBDd+sZMLkdYmrdOY1db8A85h6e/ibtC3zt9d1kJnSH/wtL4d6ILTw1kMwDr3Ww4Warivdei92wwlBRA4eoguKsCwKSWJ0QSYyA/DjkYfAg3GiIWF4Wp61bqfFOYZEstfGpnE5HAX6XbArL+yn8A2QLfZGGFH8RwfqkcfA0TQIDAQABAoIBAGne9qkfRGoIE6gy4WqeLLCDYqqTqQPrklEd5u27upV74S7BBupgZsTsTb80YVFqi4MgqM2zp/sKOimn8rOdw8V0JoRHP0UtDgQDUy3Ew0v/aHuShj2/DNlZG4rsLNW5sstG00pbvr6nmjA+Y2iUDvrMujqnyG0V7UYOA/yeYFNLnI4getwNH6KLTL5keJouNhK6n1fjQu6UeUzVY4AvwukJJhlSOdilNFB240c9cf3vkb8PhDuexTz4f1uI5+cjEUmah3WXFCW7y/a+LYF5b/A2tLtXQsvJ3bVTsXK8R2paYGO6V3m0ittwv0gqB+tO6MjAeqVlfuaUJrVIJm1cBOECgYEA8HNZRYNlJyAy91uELHieFb0NHjipgLpMPWldov7Uc9sICp9IapCb+3DdxN9dSerHt8D59zTJNiaTYMdll8lAMgyKIASd2/NWS1YHJIl7CoJSpupzEeEDeCxCjOknHciZT5R/p4fGqKQTesn6w3JKWZDlHkIdU4HL73Ab9+MMCfkCgYEA2u/sREMFRsc7aZAjDeeKMZrDrLDppNkhJj3lx31NwvCYzErqrm5VcTRQRO3Z/9skG7/5WpgXIbaaugyQD4glmvtlhUdvOQaoI2Z7MzENTwufp3+W3UmmtRkdQq6wVNwOTwduS+NhM0d4u6V9W1bA92N8fupI7OoQ6Odz5NYSMfUCgYBJ3OU7eVWFY1rEqZQ8pQDK5Lw24GkRZiktZESjYWyZ+lrKCIwSUEHaR52YcJUTs8+OHvWqfsigndEAFcCbk/LobPmxRDnJ60JC+jZPfvwRCl+hbrvSbjDGpbH731Nozsppq9BbAlaAT4a8XXduupkkUmJPnTetA15GO0YcK97y4QKBgQDZxJlqkItYCmXDK3ZipzLjAkCtrc7IhJyfcCP1GGLXiv9A/SePVvmvv0w0M62J+8xfucTp4qvngb1HX6WPfWmCTZp+Rj6QJ1no1E+o7JqDTFmCfrtt4otqSM+8+wszbSriWs7PtxyAqA+j/gjBaHpJ1/AGQT1GQc+OCmJRdMjmXQKBgQDafpfZ/BHwcKXTapF2OekiAB0mYFyQwOa7Eg5BX1/hCrl+eyXNGWRhpyj38B3k+Y+JttP0NkLBXvzVc/y6MzszEbcUhXg9Mx0KirYmX/MA2flS5uGuw4ZH9+EqViTsz76zdJ6iHqnpEvZhk2H6CZPOviCYh01Ig7fDlmiH+66bzw==-----END RSA PRIVATE KEY-----'
+            HOSTNAME : 'ec2-13-53-82-60.eu-north-1.compute.amazonaws.com'
+            USER_NAME : 'ubuntu'
+            
+        run: |
+            echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+            ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          
+            #Now we have got the access of EC2 and we will start the deploy .
+            DIR="/home/ubuntu/textMedix_Google_Business_Svcs"
+            
+            cd /home/ubuntu
+            
+            if [ ! -d $DIR ]
+            then
+              mkdir textMedix_Google_Business_Svcs &&
+              git clone https://github.com/cleph01/textMedix_Google_Business_Svcs &&
+              cd textMedix_Google_Business_Svcs &&
+              npm i
+            else
+              cd textMedix_Google_Business_Svcs
+            fi
+            
+            git checkout main &&
+            git fetch --all &&
+            git reset --hard origin/main &&
+            git pull origin main && export NVM_DIR=~/.nvm && source ~/.nvm/nvm.sh &&  npm install &&
+            pm2 restart textMedix_Google_Business_Svcs  && pm2 save -f '
+            
+            
