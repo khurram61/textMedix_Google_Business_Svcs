@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: CI-NODE
 
 # Controls when the workflow will run
 on:
@@ -27,9 +27,9 @@ jobs:
       - name: Deploy in EC2
   
         env:
-            PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY  }}
-            HOSTNAME : ${{ secrets.HOSTNAME  }}
-            USER_NAME : ${{ secrets.USER  }}
+            PRIVATE_KEY: ${{ secrets.EC2_SECRET_KEY  }}
+            HOSTNAME : ${{ secrets.HOST  }}
+            USER_NAME : ${{ secrets.USER_NAME  }}
             
         run: |
             echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
